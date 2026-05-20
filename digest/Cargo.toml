@@ -12,8 +12,8 @@ keywords = ["digest", "crypto", "hash"]
 categories = ["cryptography", "no-std"]
 
 [dependencies]
-crypto-common = { version = "0.1.3" }
-#crypto-common = { path = "../../traits-crypto-common/crypto-common" }
+#crypto-common = { version = "0.1.3" }
+crypto-common = { path = "../../traits-crypto-common/crypto-common" }
 
 # optional dependencies
 block-buffer = { version = "0.10", optional = true }
