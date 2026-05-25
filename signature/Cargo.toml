@@ -17,13 +17,14 @@ derive = { package = "signature_derive", version = "2", optional = true, path = 
 #digest = { version = "0.10.6", optional = true, default-features = false }
 digest = { path="../../traits-digest/digest", optional = true, default-features = false }
 rand_core = { version = "0.6.4", optional = true, default-features = false }
+fallible_vec = {path="../../rust_fallible_vec",optional = true}
 
 [dev-dependencies]
 hex-literal = "0.4"
 sha2 = { version = "0.10", default-features = false }
 
 [features]
-alloc = []
+alloc = ["dep:fallible_vec"]
 std = ["alloc", "rand_core?/std"]
 
 [package.metadata.docs.rs]
