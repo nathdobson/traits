@@ -21,7 +21,7 @@
 //! [`Default`], [`Clone`], [`Write`][std::io::Write]. The latter is
 //! feature-gated behind `std` feature, which is usually enabled by default
 //! by hash implementation crates.
-
+#![feature(allocator_api)]
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(unsafe_code)]
@@ -32,7 +32,6 @@
 #![warn(missing_docs, rust_2018_idioms)]
 
 #[cfg(feature = "alloc")]
-#[macro_use]
 extern crate alloc;
 
 #[cfg(feature = "std")]
@@ -44,6 +43,9 @@ pub use crypto_common::rand_core;
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
+
+#[cfg(feature = "alloc")]
+use fallible_vec::FallibleVec;
 
 #[cfg(feature = "dev")]
 #[cfg_attr(docsrs, doc(cfg(feature = "dev")))]
@@ -72,6 +74,8 @@ pub use crypto_common::{InnerInit, InvalidLength, Key, KeyInit};
 pub use mac::{CtOutput, Mac, MacError, MacMarker};
 
 use core::fmt;
+#[cfg(feature = "alloc")]
+use fallible_vec::try_vec;
 
 /// Types which consume data with byte granularity.
 pub trait Update {
@@ -132,7 +136,10 @@ pub trait XofReader {
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn read_boxed(&mut self, n: usize) -> Box<[u8]> {
-        let mut buf = vec![0u8; n].into_boxed_slice();
+        let mut buf = try_vec![0u8; n]
+            .expect("TODO")
+            .try_into_boxed_slice()
+            .expect("TODO");
         self.read(&mut buf);
         buf
     }
@@ -169,7 +176,10 @@ pub trait ExtendableOutput: Sized + Update {
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed(self, output_size: usize) -> Box<[u8]> {
-        let mut buf = vec![0u8; output_size].into_boxed_slice();
+        let mut buf = try_vec![0u8; output_size]
+            .expect("TODO")
+            .try_into_boxed_slice()
+            .expect("TODO");
         self.finalize_xof().read(&mut buf);
         buf
     }
@@ -193,7 +203,10 @@ pub trait ExtendableOutputReset: ExtendableOutput + Reset {
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed_reset(&mut self, output_size: usize) -> Box<[u8]> {
-        let mut buf = vec![0u8; output_size].into_boxed_slice();
+        let mut buf = try_vec![0u8; output_size]
+            .expect("TODO")
+            .try_into_boxed_slice()
+            .expect("TODO");
         self.finalize_xof_reset().read(&mut buf);
         buf
     }
@@ -243,7 +256,10 @@ pub trait VariableOutput: Sized + Update {
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed(self) -> Box<[u8]> {
         let n = self.output_size();
-        let mut buf = vec![0u8; n].into_boxed_slice();
+        let mut buf = try_vec![0u8; n]
+            .expect("TODO")
+            .try_into_boxed_slice()
+            .expect("TODO");
         self.finalize_variable(&mut buf)
             .expect("buf length is equal to output_size");
         buf
@@ -266,7 +282,10 @@ pub trait VariableOutputReset: VariableOutput + Reset {
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_boxed_reset(&mut self) -> Box<[u8]> {
         let n = self.output_size();
-        let mut buf = vec![0u8; n].into_boxed_slice();
+        let mut buf = try_vec![0u8; n]
+            .expect("TODO")
+            .try_into_boxed_slice()
+            .expect("TODO");
         self.finalize_variable_reset(&mut buf)
             .expect("buf length is equal to output_size");
         buf

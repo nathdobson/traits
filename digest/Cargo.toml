@@ -20,6 +20,7 @@ block-buffer = { version = "0.10", optional = true }
 subtle = { version = "2.4", default-features = false, optional = true }
 blobby = { version = "0.3", optional = true }
 const-oid = { version = "0.9", optional = true }
+fallible_vec = {path="../../rust_fallible_vec"}
 
 [features]
 default = ["core-api"]

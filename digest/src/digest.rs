@@ -3,6 +3,12 @@ use crypto_common::{typenum::Unsigned, Output, OutputSizeUser};
 
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
+#[cfg(feature = "alloc")]
+use fallible_vec::FallibleVec;
+#[cfg(feature = "alloc")]
+use fallible_vec::SliceExt;
+#[cfg(feature = "alloc")]
+use fallible_vec::try_vec;
 
 /// Marker trait for cryptographic hash functions.
 pub trait HashMarker {}
@@ -139,9 +145,9 @@ pub trait DynDigest {
     #[cfg(feature = "alloc")]
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     fn finalize_reset(&mut self) -> Box<[u8]> {
-        let mut result = vec![0; self.output_size()];
+        let mut result = try_vec![0; self.output_size()].expect("TODO");
         self.finalize_into_reset(&mut result).unwrap();
-        result.into_boxed_slice()
+        result.try_into_boxed_slice().expect("TODO")
     }
 
     /// Retrieve result and consume boxed hasher instance
@@ -149,9 +155,9 @@ pub trait DynDigest {
     #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
     #[allow(clippy::boxed_local)]
     fn finalize(mut self: Box<Self>) -> Box<[u8]> {
-        let mut result = vec![0; self.output_size()];
+        let mut result = try_vec![0; self.output_size()].expect("TODO");
         self.finalize_into_reset(&mut result).unwrap();
-        result.into_boxed_slice()
+        result.try_into_boxed_slice().expect("TODO")
     }
 
     /// Write result into provided array and consume the hasher instance.
@@ -184,15 +190,15 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
     #[cfg(feature = "alloc")]
     fn finalize_reset(&mut self) -> Box<[u8]> {
         FixedOutputReset::finalize_fixed_reset(self)
-            .to_vec()
-            .into_boxed_slice()
+            .try_to_vec().expect("TODO")
+            .try_into_boxed_slice().expect("TODO")
     }
 
     #[cfg(feature = "alloc")]
     fn finalize(self: Box<Self>) -> Box<[u8]> {
         FixedOutput::finalize_fixed(*self)
-            .to_vec()
-            .into_boxed_slice()
+            .try_to_vec().expect("TODO")
+            .try_into_boxed_slice().expect("TODO")
     }
 
     fn finalize_into(self, buf: &mut [u8]) -> Result<(), InvalidBufferSize> {
@@ -223,7 +229,7 @@ impl<D: Update + FixedOutputReset + Reset + Clone + 'static> DynDigest for D {
 
     #[cfg(feature = "alloc")]
     fn box_clone(&self) -> Box<dyn DynDigest> {
-        Box::new(self.clone())
+        Box::try_new(self.clone()).expect("TODO")
     }
 }
 
